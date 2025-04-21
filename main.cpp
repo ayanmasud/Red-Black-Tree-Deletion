@@ -19,7 +19,7 @@ using namespace std;
 class btn { // binary tree node class
 public:
   int value;
-  int color; // 0 -> black, 1 -> red
+  int color; // 0 -> black, 1 -> red, 3 -> double black
   btn* left;
   btn* right;
   btn* parent;
@@ -92,7 +92,9 @@ void print(btn* current, int depth);
 void cases(btn* &head, btn* node);
 void rotateLeft(btn* &head, btn* node);
 void rotateRight(btn* &head, btn* node);
+void search(btn* &head, btn* current, int val);
 void del(btn* &head, btn* current, int val);
+void delCases(btn* head, btn* node);
 
 int main() {
   // instructions
@@ -207,7 +209,7 @@ void print(btn* current, int depth) {
   }
 
   // print the value
-  if (current->getColor() == 0) { // black node
+  if (current->getColor() == 0 || current->getColor() == 3) { // black node
     cout << WHITE << current->getValue() << RESET << endl;
   }
   else { // red node
@@ -344,6 +346,24 @@ void cases(btn* &head, btn* node) {
   node->getParent()->setColor(0); // ensure black parent after rotation
 }
 
+void search(btn* &head, btn* current, int val) {
+  if (current == nullptr) { // stop
+    return;
+  }
+
+  if (current->getValue() == val) { // found!
+    cout << "This number exists." << endl;
+  }
+
+  if (current->getValue() < val) { // value is bigger so go right
+    del(head, current->getRight(), val); // recurse right
+  }
+
+  if (current->getValue() > val) { // value is less so go left
+    del(head, current->getLeft(), val); // recurse left
+  }
+}
+
 void del(btn* &head, btn* current, int val) {
   
   if (current == nullptr) { // stop
@@ -356,9 +376,99 @@ void del(btn* &head, btn* current, int val) {
   
   if (current->getValue() < val) { // value is bigger so go right
     del(head, current->getRight(), val); // recurse right
- }
+  }
 
   if (current->getValue() > val) { // value is less so go left
     del(head, current->getLeft(), val); // recurse left
   }
+}
+
+void delCases(btn* head, btn* node) {
+  // case 1: root is double black
+  if (node->getColor() == 3 && head == node) {
+    // node black
+    node->setColor(1);
+    return;
+  }
+
+  // case 2: node double black; parent black; sibling black; newphews black
+  if (node->getColor() == 3 && node->getParent()->getColor() == 1) {
+    btn* sibling = nullptr;
+    if (node == node->getParent()->getLeft()) { // sibling is parent right
+      sibling = node->getParent()->getRight();
+    }
+    else { 
+      sibling = node->getParent()->getLeft();
+    }
+
+    if (sibling->getColor() == 1 &&
+	sibling->getLeft()->getColor() == 1 || sibling->getLeft() == nullptr &&
+	sibling->getRight()->getColor() == 1 || sibling->getRight() == nullptr) { // sibling black, nephews black
+      // node black; parent double black; sibling red
+      node->setColor(1);
+      node->getParent()->setColor(3);
+      sibling->setColor(2);
+
+      delCases(head, node->getParent());
+    }
+  }
+
+  // case 3: node double black; parent black; sibling red; nephews black
+  if (node->getColor() == 3 && node->getParent()->getColor() == 1) {
+    btn* sibling = nullptr;
+    bool siblingRight;
+    if (node == node->getParent()->getLeft()) { // sibling is parent right
+      sibling = node->getParent()->getRight();
+      siblingRight = true;
+    }
+    else { // sibling is parent left
+      sibling = node->getParent()->getLeft();
+      siblingRight = false;
+    }
+
+    if (sibling->getColor() == 2 &&
+        sibling->getLeft()->getColor() == 1 || sibling->getLeft() == nullptr &&
+        sibling->getRight()->getColor() == 1 || sibling->getRight() == nullptr) {// sibling red, nephews black
+
+      if (siblingRight == true) {
+	// rotate left on sibling; parent red
+	rotateLeft(head, sibling);
+	node->getParent()->setColor(2);
+	delCases(head, node);
+      }
+      else {
+	// rotate right on sibling; parent red
+        rotateRight(head, sibling);
+        node->getParent()->setColor(2);
+        delCases(head, node);
+      }
+    }
+  }
+
+  // case 4: node double black; parent red; sibling black; newphews black
+  if (node->getColor() == 3 && node->getParent()->getColor() == 2) {
+    btn* sibling = nullptr;
+    if (node == node->getParent()->getLeft()) { // sibling is parent right
+      sibling = node->getParent()->getRight();
+    }
+    else {
+      sibling = node->getParent()->getLeft();
+    }
+
+    if (sibling->getColor() == 1 &&
+        sibling->getLeft()->getColor() == 1 || sibling->getLeft() == nullptr &&
+        sibling->getRight()->getColor() == 1 || sibling->getRight() == nullptr) { \
+ // sibling black, nephews black
+      // node black; parent black; sibling red
+      node->setColor(1);
+      node->getParent()->setColor(1);
+      sibling->setColor(2);
+      return;
+    }
+  }
+
+  // case 5: node double black; parent black or red; sibling black; closer nephew red; farther nephew black
+
+
+  // case 6: node double black; parent black or red; sibling black; farther nephew red
 }
