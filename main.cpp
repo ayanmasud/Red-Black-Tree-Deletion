@@ -100,6 +100,7 @@ int main() {
   // instructions
   cout << "'ADD' to add a number" << endl;
   cout << "'DELETE' to delete a number" << endl;
+  cout << "'SEARCH' to see if a number exists" << endl;
   cout << "'PRINT' to print the tree" << endl;
   cout << "'QUIT' to leave" << endl;
 
@@ -154,6 +155,13 @@ int main() {
       //else { // deleting other than head
       del(head, head, num);
 	//}
+    }
+    else if (strcmp(cmd, "SEARCH") == 0) { // delete command
+      int num;
+      cout << "which num: ";
+      cin >> num;
+
+      search(head, head, num);
     }
     else if (strcmp(cmd, "PRINT") == 0) { // print command
       print(head, 0);
@@ -391,16 +399,19 @@ void delCases(btn* head, btn* node) {
     return;
   }
 
+  btn* sibling = nullptr;
+  bool siblingRight;
+  if (node == node->getParent()->getLeft()) { // sibling is parent right
+    sibling = node->getParent()->getRight();
+    siblingRight = true;
+  }
+  else { // sibling is parent left
+    sibling = node->getParent()->getLeft();
+    siblingRight = false;
+  }
+
   // case 2: node double black; parent black; sibling black; newphews black
   if (node->getColor() == 3 && node->getParent()->getColor() == 1) {
-    btn* sibling = nullptr;
-    if (node == node->getParent()->getLeft()) { // sibling is parent right
-      sibling = node->getParent()->getRight();
-    }
-    else { 
-      sibling = node->getParent()->getLeft();
-    }
-
     if (sibling->getColor() == 1 &&
 	sibling->getLeft()->getColor() == 1 || sibling->getLeft() == nullptr &&
 	sibling->getRight()->getColor() == 1 || sibling->getRight() == nullptr) { // sibling black, nephews black
@@ -415,17 +426,6 @@ void delCases(btn* head, btn* node) {
 
   // case 3: node double black; parent black; sibling red; nephews black
   if (node->getColor() == 3 && node->getParent()->getColor() == 1) {
-    btn* sibling = nullptr;
-    bool siblingRight;
-    if (node == node->getParent()->getLeft()) { // sibling is parent right
-      sibling = node->getParent()->getRight();
-      siblingRight = true;
-    }
-    else { // sibling is parent left
-      sibling = node->getParent()->getLeft();
-      siblingRight = false;
-    }
-
     if (sibling->getColor() == 2 &&
         sibling->getLeft()->getColor() == 1 || sibling->getLeft() == nullptr &&
         sibling->getRight()->getColor() == 1 || sibling->getRight() == nullptr) {// sibling red, nephews black
@@ -447,14 +447,6 @@ void delCases(btn* head, btn* node) {
 
   // case 4: node double black; parent red; sibling black; newphews black
   if (node->getColor() == 3 && node->getParent()->getColor() == 2) {
-    btn* sibling = nullptr;
-    if (node == node->getParent()->getLeft()) { // sibling is parent right
-      sibling = node->getParent()->getRight();
-    }
-    else {
-      sibling = node->getParent()->getLeft();
-    }
-
     if (sibling->getColor() == 1 &&
         sibling->getLeft()->getColor() == 1 || sibling->getLeft() == nullptr &&
         sibling->getRight()->getColor() == 1 || sibling->getRight() == nullptr) { \
@@ -467,8 +459,35 @@ void delCases(btn* head, btn* node) {
     }
   }
 
-  // case 5: node double black; parent black or red; sibling black; closer nephew red; farther nephew black
-
-
-  // case 6: node double black; parent black or red; sibling black; farther nephew red
+  // case 5 & 6: node double black; parent black or red; sibling black
+  if (node->getColor() == 3 && sibling->getColor() == 1) {
+    if (siblingRight == true) {
+      // case 5: closer nephew red
+      if (sibling->getLeft()->getColor() == 2) {
+        rotateRight(head, sibling->getLeft());
+	return;
+      }
+      // case 6: farther nephew red
+      else if (sibling->getRight()->getColor() == 2) {
+        rotateLeft(head, sibling);
+	node->setColor(1);
+	sibling->getRight()->setColor(1);
+	return;
+      }
+    }
+    else {
+      // case 5: closer nephew red
+      if (sibling->getRight()->getColor() == 2) {
+	rotateLeft(head, sibling->getRight());
+	return;
+      }
+      // case 6: farther nephew red
+      else if (sibling->getLeft()->getColor() == 2) {
+	rotateRight(head, sibling);
+	node->setColor(1);
+	sibling->getLeft()->setColor(1);
+	return;
+      }
+    }
+  }
 }
