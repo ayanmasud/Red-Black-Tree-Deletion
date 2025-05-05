@@ -17,13 +17,13 @@
  using namespace std;
  
  class btn { // binary tree node class
- public:
+ private:
    int value;
    int color; // 0 -> black, 1 -> red, 2 -> double black
    btn* left;
    btn* right;
    btn* parent;
- 
+ public:
    // constructor requires setting its value
    btn(int val) {
      value = val;
@@ -541,7 +541,7 @@ void delCases(btn* &head, btn* node) {
 
   // case 5: prepare for case 6
   if (sibling->getColor() == 0) {
-    cout << "ran" << endl;
+    //cout << "ran" << endl;
     if (node == parent->getLeft() && 
 	isLeftNephewRed && !isRightNephewRed) {
       sibling->setColor(1);
