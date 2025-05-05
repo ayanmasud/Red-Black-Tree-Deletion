@@ -383,7 +383,7 @@ void search(btn* &head, btn* current, int val) {
 
   if (current->getValue() == val) { // found!
     btn* nodeToDelete = current;
-
+    
     // case 1: two children
     if (current->getLeft() != nullptr && current->getRight() != nullptr) {
       // using the in order predecessor
@@ -391,24 +391,24 @@ void search(btn* &head, btn* current, int val) {
       while (predecessor->getRight() != nullptr) {
         predecessor = predecessor->getRight();
       }
-
+      
       // swap values of current and predecessor
       int temp = predecessor->getValue();
       predecessor->setValue(current->getValue());
       current->setValue(temp);
-
+      
       // delete the predecessor
-      del(head, current->getLeft(), temp);
+      del(head, current->getLeft(), val);
       return;
     }
-
+    
     btn* child = nullptr;
     if (current->getLeft() != nullptr) {
       child = current->getLeft();
     } else if (current->getRight() != nullptr) {
       child = current->getRight();
     }
-
+    
     // case 2: one child
     if (child != nullptr) {
       // replace current with child
@@ -427,27 +427,29 @@ void search(btn* &head, btn* current, int val) {
       delete current;
       return;
     }
-
+    
     // case 3: No children and is root
     if (current == head) {
       delete current;
       head = nullptr;
       return;
     }
-
+    //cout << "before" << endl;
     // case 4: is leaf and red
     if (current->getColor() == 1) {
+      //cout << "ran" << endl;
       btn* parent = current->getParent();
       if (parent->getLeft() == current) {
         parent->setLeft(nullptr);
-      } else {
+      }
+      else {
         parent->setRight(nullptr);
       }
       delete current;
       return;
     }
     else { // case 5: is leaf and black. double black happens
-      current->setColor(2); // make it double black
+      //current->setColor(2); // make it double black
       delCases(head, current);  // deletion fixer
     }
 
@@ -455,7 +457,8 @@ void search(btn* &head, btn* current, int val) {
     btn* parent = current->getParent();
     if (parent->getLeft() == current) {
       parent->setLeft(nullptr);
-    } else {
+    }
+    else {
       parent->setRight(nullptr);
     }
     delete current;
@@ -464,7 +467,7 @@ void search(btn* &head, btn* current, int val) {
   if (current->getValue() < val) { // value is bigger so go right
     del(head, current->getRight(), val); // recurse right
   }
-
+  
   if (current->getValue() > val) { // value is less so go left
     del(head, current->getLeft(), val); // recurse left
   }
@@ -472,33 +475,38 @@ void search(btn* &head, btn* current, int val) {
 
 
 void delCases(btn* &head, btn* node) {
-  if (node == nullptr) return;
-
+  if (node == nullptr) {
+    return;
+  }
+  
   // case 1: node is root
   if (node == head) {
       node->setColor(0);
       return;
   }
-
+  
   btn* parent = node->getParent();
   btn* sibling = nullptr;
   if (node == parent->getLeft()) {
-      sibling = parent->getRight();
-  } else {
-      sibling = parent->getLeft();
+    sibling = parent->getRight();
   }
+  else {
+    sibling = parent->getLeft();
+  }
+  
   if (sibling == nullptr) {
     return; // shouldnt actually happen
   }
-
+  
   // case 2: sibling is red
   if (sibling->getColor() == 1) {
       parent->setColor(1);
       sibling->setColor(0);
       if (node == parent->getLeft()) {
-          rotateLeft(head, parent);
-      } else {
-          rotateRight(head, parent);
+	rotateLeft(head, parent);
+      }
+      else {
+	rotateRight(head, parent);
       }
       delCases(head, node); // recurse with new sibling
       return;
@@ -507,57 +515,62 @@ void delCases(btn* &head, btn* node) {
   bool isLeftNephewRed = false;
   bool isRightNephewRed = false;
   if (sibling->getLeft() != nullptr && sibling->getLeft()->getColor() == 1) {
-      isLeftNephewRed = true;
+    isLeftNephewRed = true;
   }
   if (sibling->getRight() != nullptr && sibling->getRight()->getColor() == 1) {
-      isRightNephewRed = true;
+    isRightNephewRed = true;
   }
-
+  
   // case 3: parent, sibling, and nephews are black
   if (parent->getColor() == 0 && sibling->getColor() == 0 && 
       !isLeftNephewRed && !isRightNephewRed) {
-      sibling->setColor(1);
-      delCases(head, parent);
-      return;
+    sibling->setColor(1);
+    //node->setColor(0);
+    //parent->setColor(2);
+    delCases(head, parent); // parent is now double black
+    return;
   }
-
+  
   // case 4: parent is red, sibling and nephews are black
   if (parent->getColor() == 1 && sibling->getColor() == 0 && 
       !isLeftNephewRed && !isRightNephewRed) {
-      sibling->setColor(1);
-      parent->setColor(0);
-      return;
+    sibling->setColor(1);
+    parent->setColor(0);
+    return;
   }
 
   // case 5: prepare for case 6
   if (sibling->getColor() == 0) {
-      if (node == parent->getLeft() && 
-          isLeftNephewRed && !isRightNephewRed) {
-          sibling->setColor(1);
-          sibling->getLeft()->setColor(0);
-          rotateRight(head, sibling);
-          sibling = parent->getRight();
-      } else if (node == parent->getRight() && 
-                !isLeftNephewRed && isRightNephewRed) {
-          sibling->setColor(1);
-          sibling->getRight()->setColor(0);
-          rotateLeft(head, sibling);
-          sibling = parent->getLeft();
-      }
+    cout << "ran" << endl;
+    if (node == parent->getLeft() && 
+	isLeftNephewRed && !isRightNephewRed) {
+      sibling->setColor(1);
+      sibling->getLeft()->setColor(0);
+      rotateRight(head, sibling);
+      sibling = parent->getRight();
+    }
+    else if (node == parent->getRight() && 
+	     !isLeftNephewRed && isRightNephewRed) {
+      sibling->setColor(1);
+      sibling->getRight()->setColor(0);
+      rotateLeft(head, sibling);
+      sibling = parent->getLeft();
+    }
   }
 
   // case 6: sibling is black, with at least one red nephew in correct position
   sibling->setColor(parent->getColor());
   parent->setColor(0);
   if (node == parent->getLeft()) {
-      if (sibling->getRight() != nullptr) {
-          sibling->getRight()->setColor(0);
-      }
-      rotateLeft(head, parent);
-  } else {
-      if (sibling->getLeft() != nullptr) {
-          sibling->getLeft()->setColor(0);
-      }
-      rotateRight(head, parent);
+    if (sibling->getRight() != nullptr) {
+      sibling->getRight()->setColor(0);
+    }
+    rotateLeft(head, parent);
+  }
+  else {
+    if (sibling->getLeft() != nullptr) {
+      sibling->getLeft()->setColor(0);
+    }
+    rotateRight(head, parent);
   }
 }
