@@ -405,7 +405,8 @@ void search(btn* &head, btn* current, int val) {
     btn* child = nullptr;
     if (current->getLeft() != nullptr) {
       child = current->getLeft();
-    } else if (current->getRight() != nullptr) {
+    }
+    else if (current->getRight() != nullptr) {
       child = current->getRight();
     }
     
@@ -415,10 +416,12 @@ void search(btn* &head, btn* current, int val) {
       btn* parent = current->getParent();
       if (parent == nullptr) {
         head = child; // child becomes the new root
-      } else {
+      }
+      else {
         if (current == parent->getLeft()) {
           parent->setLeft(child);
-        } else {
+        }
+	else {
           parent->setRight(child);
         }
       }
@@ -462,6 +465,7 @@ void search(btn* &head, btn* current, int val) {
       parent->setRight(nullptr);
     }
     delete current;
+    return;
   }
 
   if (current->getValue() < val) { // value is bigger so go right
