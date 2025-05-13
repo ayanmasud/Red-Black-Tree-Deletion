@@ -441,8 +441,7 @@ void search(btn* &head, btn* current, int val) {
     
     // case 3: No children and is root
     if (current == head) {
-      current->~btn();
-      head = nullptr;
+      current->setValue(0); // this is where the tree goes empty
       return;
     }
     //cout << "before" << endl;
@@ -460,12 +459,15 @@ void search(btn* &head, btn* current, int val) {
       return;
     }
     else { // case 5: is leaf and black. double black happens
+      //cout << "happened1" << endl;
       //current->setColor(2); // make it double black
       delCases(head, current);  // deletion fixer
     }
 
     // actually remove the node
+    //cout << "happened2" << endl;
     btn* parent = current->getParent();
+    cout << parent->getValue() << endl;
     if (parent->getLeft() == current) {
       parent->setLeft(nullptr);
     }
@@ -493,7 +495,7 @@ void delCases(btn* &head, btn* node) {
   
   // case 1: node is root
   if (node == head) {
-    node->setValue(0); // this is how i represent an empty tree
+    node->setColor(0);
       return;
   }
   
@@ -536,6 +538,8 @@ void delCases(btn* &head, btn* node) {
   // case 2: parent, sibling, and nephews are black
   if (parent->getColor() == 0 && sibling->getColor() == 0 && 
       !isLeftNephewRed && !isRightNephewRed) {
+    //cout << "happened3" << endl;
+    cout << node->getValue() << endl;
     sibling->setColor(1);
     //node->setColor(0);
     //parent->setColor(2);
