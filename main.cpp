@@ -1,6 +1,13 @@
 /* Red Black Tree Insertion: self-balancing binary tree which has red or black nodes
    Author: Ayan Masud
    Date: 4/10/2025
+
+   Credit:
+   - https://en.wikipedia.org/wiki/Red%E2%80%93black_tree (tables were useful for identifying insertion and deletion cases)
+   - https://www.youtube.com/watch?v=CTvfzU_uNKE (cases on whiteboard for deletion was useful for visualization)
+
+   Visualizer used for testing:
+   - https://www.cs.usfca.edu/~galles/visualization/RedBlack.html (reason why i used in order predecessor)
  */
 
  #include <iostream>
@@ -19,7 +26,7 @@
  class btn { // binary tree node class
  private:
    int value;
-   int color; // 0 -> black, 1 -> red, 2 -> double black
+   int color; // 0 -> black, 1 -> red
    btn* left;
    btn* right;
    btn* parent;
@@ -37,6 +44,7 @@
    ~btn() {
      left = nullptr;
      right = nullptr;
+     parent = nullptr;
    }
  
    // get parent
@@ -427,13 +435,13 @@ void search(btn* &head, btn* current, int val) {
       }
       child->setParent(parent);
       child->setColor(0); // child turns black
-      delete current;
+      current->~btn();
       return;
     }
     
     // case 3: No children and is root
     if (current == head) {
-      delete current;
+      current->~btn();
       head = nullptr;
       return;
     }
@@ -448,7 +456,7 @@ void search(btn* &head, btn* current, int val) {
       else {
         parent->setRight(nullptr);
       }
-      delete current;
+      current->~btn();
       return;
     }
     else { // case 5: is leaf and black. double black happens
@@ -464,7 +472,7 @@ void search(btn* &head, btn* current, int val) {
     else {
       parent->setRight(nullptr);
     }
-    delete current;
+    current->~btn();
     return;
   }
 
@@ -485,7 +493,7 @@ void delCases(btn* &head, btn* node) {
   
   // case 1: node is root
   if (node == head) {
-      node->setColor(0);
+    node->setValue(0); // this is how i represent an empty tree
       return;
   }
   
@@ -502,18 +510,18 @@ void delCases(btn* &head, btn* node) {
     return; // shouldnt actually happen
   }
   
-  // case 2: sibling is red
+  // case 3: sibling is red
   if (sibling->getColor() == 1) {
-      parent->setColor(1);
-      sibling->setColor(0);
-      if (node == parent->getLeft()) {
-	rotateLeft(head, parent);
-      }
-      else {
-	rotateRight(head, parent);
-      }
-      delCases(head, node); // recurse with new sibling
-      return;
+    parent->setColor(1); // parent red
+    sibling->setColor(0); // sibling red
+    if (node == parent->getLeft()) { // rotation
+      rotateLeft(head, parent);
+    }
+    else {
+      rotateRight(head, parent);
+    }
+    delCases(head, node); // run through with the same node again
+    return;
   }
 
   bool isLeftNephewRed = false;
@@ -525,7 +533,7 @@ void delCases(btn* &head, btn* node) {
     isRightNephewRed = true;
   }
   
-  // case 3: parent, sibling, and nephews are black
+  // case 2: parent, sibling, and nephews are black
   if (parent->getColor() == 0 && sibling->getColor() == 0 && 
       !isLeftNephewRed && !isRightNephewRed) {
     sibling->setColor(1);
@@ -538,23 +546,23 @@ void delCases(btn* &head, btn* node) {
   // case 4: parent is red, sibling and nephews are black
   if (parent->getColor() == 1 && sibling->getColor() == 0 && 
       !isLeftNephewRed && !isRightNephewRed) {
-    sibling->setColor(1);
-    parent->setColor(0);
+    sibling->setColor(1); // sibling red
+    parent->setColor(0); // parent black
     return;
   }
 
   // case 5: prepare for case 6
-  if (sibling->getColor() == 0) {
+  if (sibling->getColor() == 0) { // sibling black
     //cout << "ran" << endl;
     if (node == parent->getLeft() && 
-	isLeftNephewRed && !isRightNephewRed) {
-      sibling->setColor(1);
-      sibling->getLeft()->setColor(0);
-      rotateRight(head, sibling);
-      sibling = parent->getRight();
+	isLeftNephewRed && !isRightNephewRed) { // closer nephew is red
+      sibling->setColor(1); // sibling red
+      sibling->getLeft()->setColor(0); // closer nephew black
+      rotateRight(head, sibling); // rotation
+      sibling = parent->getRight(); // saved the new sibling in sibling variable
     }
     else if (node == parent->getRight() && 
-	     !isLeftNephewRed && isRightNephewRed) {
+	     !isLeftNephewRed && isRightNephewRed) { // basically the same stuff
       sibling->setColor(1);
       sibling->getRight()->setColor(0);
       rotateLeft(head, sibling);
@@ -563,16 +571,16 @@ void delCases(btn* &head, btn* node) {
   }
 
   // case 6: sibling is black, with at least one red nephew in correct position
-  sibling->setColor(parent->getColor());
-  parent->setColor(0);
+  sibling->setColor(parent->getColor()); // sibling is parents color
+  parent->setColor(0); // parent black
   if (node == parent->getLeft()) {
     if (sibling->getRight() != nullptr) {
-      sibling->getRight()->setColor(0);
+      sibling->getRight()->setColor(0); // set nephew to black
     }
-    rotateLeft(head, parent);
+    rotateLeft(head, parent); // rotation
   }
   else {
-    if (sibling->getLeft() != nullptr) {
+    if (sibling->getLeft() != nullptr) { // basically the same stuff
       sibling->getLeft()->setColor(0);
     }
     rotateRight(head, parent);
